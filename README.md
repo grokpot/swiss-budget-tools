@@ -1,4 +1,4 @@
-# budget-tools
+# swiss-budget-tools
 
 ## Problem
 Many European and Swiss banks don't allow API access, making it difficult to sync your accounts with a centralized budget tool, such as [LunchMoney](https://lunchmoney.app/?refer=x01525r3)  

@@ -77,7 +77,14 @@ class CamtParser:
                         len(entry["entry_details"]) == 1
                     ), "Have not yet come across a case where there are multiple entries in a batch"
                     # Unbatching in case bank has batched transactions
-                    for transaction in entry["entry_details"][0]["transactions"]:
+                    if entry["entry_details"][0].get("transactions"):
+                        transactions = entry["entry_details"][0]["transactions"]
+                        amount_field = "amount"
+                    # Sometimes a transaction does not exist, but the entry is still valid
+                    else:
+                        transactions = [entry["entry_details"][0]['batch']]
+                        amount_field = "total_amount"
+                    for transaction in transactions:
                         tx = {}
                         tx[self.HEADER_DATE] = entry["value_date"]["date"]
                         assert (
@@ -85,34 +92,33 @@ class CamtParser:
                         ), "Have not yet come across a case where there are multiple descriptions"
                         tx[self.HEADER_DESCRIPTION] = entry["additional_information"][0]
                         tx[self.HEADER_TYPE] = transaction["credit_debit_indicator"]
-                        tx[self.HEADER_CREDITOR] = transaction["related_parties"][
-                            "creditor"
-                        ]["name"]
-                        tx[self.HEADER_DEBTOR] = transaction["related_parties"][
-                            "debtor"
-                        ]["name"]
+                        if transaction.get("related_parties"):
+                            tx[self.HEADER_CREDITOR] = transaction["related_parties"][
+                                "creditor"
+                            ]["name"]
+                            tx[self.HEADER_DEBTOR] = transaction["related_parties"][
+                                "debtor"
+                            ]["name"]
                         # If collecting bank fees as a separate tx, use the pre-fee amount as amount and update description
-                        if self.include_bank_fees:
+                        if self.include_bank_fees and amount_field == "amount" and transaction.get("amount_details"):
                             bank_fee = self._check_bank_fees(entry, transaction)
                             if bank_fee > 0:
                                 bank_fee_instances += 1
                                 bank_fees -= bank_fee
                             all_entries.append(tx)
                             amt = float(
-                                transaction["amount_details"]["transaction_amount"][
-                                    "amount"
-                                ]["_value"]
+                                transaction["amount_details"]["transaction_amount"][amount_field]["_value"]
                             )
                             if bank_fee:
                                 tx[
                                     self.HEADER_DESCRIPTION
                                 ] = f"{tx[self.HEADER_DESCRIPTION]} (excl. {bank_fee:.{2}f} bank fee)"
                         else:
-                            amt = float(transaction["amount"]["_value"])
+                            amt = float(transaction[amount_field]["_value"])
                         tx[self.HEADER_AMOUNT] = amt * (
                             -1 if tx[self.HEADER_TYPE] == "DBIT" else 1
                         )
-                        tx[self.HEADER_CURRENCY] = transaction["amount"]["currency"]
+                        tx[self.HEADER_CURRENCY] = transaction[amount_field]["currency"]
         if bank_fee_instances > 0:
             logger.info(
                 f"There were {bank_fee_instances} instances of entry/tx amt differences which could indicate bank fees. Total potential fees: {bank_fees}"

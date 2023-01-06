@@ -105,7 +105,6 @@ class CamtParser:
                             if bank_fee > 0:
                                 bank_fee_instances += 1
                                 bank_fees -= bank_fee
-                            all_entries.append(tx)
                             amt = float(
                                 transaction["amount_details"]["transaction_amount"][amount_field]["_value"]
                             )
@@ -119,6 +118,7 @@ class CamtParser:
                             -1 if tx[self.HEADER_TYPE] == "DBIT" else 1
                         )
                         tx[self.HEADER_CURRENCY] = transaction[amount_field]["currency"]
+                        all_entries.append(tx)
         if bank_fee_instances > 0:
             logger.info(
                 f"There were {bank_fee_instances} instances of entry/tx amt differences which could indicate bank fees. Total potential fees: {bank_fees}"

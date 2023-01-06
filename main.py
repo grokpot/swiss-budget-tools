@@ -15,7 +15,8 @@ me = "Ryan"
 
 # default contains todays date
 # strf format for HH:MM:SS:
-default_output_filename = f'~/Downloads/{datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")}_SOURCE-converted.csv'
+default_output_folder = os.getcwd() if 'workspaces' in os.getcwd() else f'~/Downloads/'
+default_output_filename = f'{default_output_folder}{datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")}_SOURCE-converted.csv'
 # Use python click to take two parameters
 @click.command()
 @click.option("--source", help="Sources: valiant, n26, wise")

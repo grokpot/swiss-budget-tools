@@ -120,6 +120,7 @@ class CamtParser:
                         tx[self.HEADER_CURRENCY] = transaction[amount_field]["currency"]
                         all_entries.append(tx)
         if bank_fee_instances > 0:
+            bank_fees = round(bank_fees, 2)
             logger.info(
                 f"There were {bank_fee_instances} instances of entry/tx amt differences which could indicate bank fees. Total potential fees: {bank_fees}"
             )

@@ -15,8 +15,8 @@ me = "Ryan"
 
 # default contains todays date
 # strf format for HH:MM:SS:
-default_output_folder = os.getcwd() if 'workspaces' in os.getcwd() else f'~/Downloads/'
-default_output_filename = f'{default_output_folder}{datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")}_SOURCE-converted.csv'
+is_ephemeral = 'workspaces' in os.getcwd()
+default_output_filename = f'~/Downloads/{datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")}_SOURCE-converted.csv'
 # Use python click to take two parameters
 @click.command()
 @click.option("--source", help="Sources: valiant, n26, wise")
@@ -47,8 +47,13 @@ def main(source, input, output, include_bank_fees):
         df = parse_n26_csv(df)
     # Replace SOURCE with the source name
     output = output.replace("SOURCE", source)
-    # Write the output file, using comma as delimiter
-    df.to_csv(output, index=False, sep=",")
+    # Write the output file
+    if is_ephemeral:
+        # Print to console
+        print(df.to_csv(index=False, sep=","))
+    else:
+        # Write to file
+        df.to_csv(output, index=False, sep=",")
 
 
 if __name__ == "__main__":

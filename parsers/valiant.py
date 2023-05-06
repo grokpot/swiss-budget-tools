@@ -19,6 +19,10 @@ def clean_df(df):
     df[HEADER_DESCRIPTION] = df[HEADER_DESCRIPTION].str.replace(
         r"Zahlung - ", "", regex=True
     )
+    # Remove  - Karten-Nr. 123456******1234
+    df[HEADER_DESCRIPTION] = df[HEADER_DESCRIPTION].str.replace(
+        r" - Karten-Nr. \d{6}\*{6}\d{4}", "", regex=True
+    )
     # Replace `Vergütung` with `(Transfer)`
     df.loc[df[HEADER_DESCRIPTION].str.contains("Vergütung"), HEADER_DESCRIPTION] = df[
         HEADER_DESCRIPTION
